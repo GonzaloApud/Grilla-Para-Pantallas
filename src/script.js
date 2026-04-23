@@ -123,6 +123,16 @@ function renderAllScreens() {
         text.textContent = `${h_px}x${v_px}`;
         svg.appendChild(text);
 
+        const watermark = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        watermark.setAttribute('x', (screen.w * scale) - (minDimension * 0.05));
+        watermark.setAttribute('y', (screen.h * scale) - (minDimension * 0.05));
+        watermark.setAttribute('fill', 'rgba(255, 255, 255, 0.3)');
+        watermark.setAttribute('text-anchor', 'end');
+        watermark.setAttribute('font-size', minDimension * 0.05);
+        watermark.setAttribute('font-family', 'Arial');
+        watermark.textContent = "By Gonzalo Apud";
+        svg.appendChild(watermark);
+
         wrapper.appendChild(svg);
 
         // Panel de Datos
