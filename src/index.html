@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Multi-Pantalla LED</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="controls">
+        <h2>Añadir Pantalla al Proyecto</h2>
+        <div class="input-group" style="grid-column: 1 / -1;">
+            <label>Título de la Pantalla:</label>
+            <input type="text" id="input-title" value="PANTALLA CENTRAL">
+        </div>
+        <div class="input-group">
+            <label>Ancho (m):</label>
+            <input type="number" id="input-screen-w" value="3.0" step="0.1" min="0.1">
+        </div>
+        <div class="input-group">
+            <label>Alto (m):</label>
+            <input type="number" id="input-screen-h" value="2.0" step="0.1" min="0.1">
+        </div>
+        <div class="input-group">
+            <label>Pitch (mm):</label>
+            <input type="number" id="input-pitch" value="3.9" step="0.1" min="0.1">
+        </div>
+        <div class="input-group">
+            <label>Ancho Módulo (cm):</label>
+            <input type="number" id="input-module-w" value="50" step="1" min="10">
+        </div>
+        <div class="input-group">
+            <label>Alto Módulo (cm):</label>
+            <input type="number" id="input-module-h" value="50" step="1" min="10">
+        </div>
+        
+        <div class="button-group">
+            <button id="add-btn">Añadir Pantalla</button>
+            <button id="clear-btn" class="danger">Borrar Todo</button>
+        </div>
+
+        <div id="zoom-control">
+            <label><strong>Zoom Global:</strong></label>
+            <input type="range" id="zoom-slider" min="30" max="300" value="120">
+            <span id="zoom-value">120px/m</span>
+        </div>
+
+        <div class="button-group" style="margin-top: 5px;">
+            <button id="export-jpg-btn" class="success">⬇ Exportar a JPG (Alta Calidad)</button>
+            <button id="export-pdf-btn" class="info">⬇ Exportar a PDF</button>
+        </div>
+    </div>
+
+    <div id="output-area"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script src="script.js"></script>
+</body>
+</html>
