@@ -11,7 +11,7 @@ A web tool designed to quickly calculate and visualize LED screen configurations
 * **Dynamic Visualization**: Generates a scaled SVG representation of each screen, featuring a module grid, crosshair guides, and center point markers.
 * **Zoom Control**: Adjustable workspace scaling to manage multiple screens within a single view.
 * **Exporting**: Export your schemas directly to JPG or PDF formats for documentation.
-* **Responsive Design**: Fully optimized for desktop. While it works on mobile for smaller screens, it is not recommended for screens over 10m in width.
+* **Responsive Design**: Fully optimized for desktop. While it works on mobile for smaller screens, it is not recommended for screens over 10m in width, and on a laptop to about 60m.
 
 ---
 
@@ -59,7 +59,7 @@ Una herramienta web diseñada para calcular y visualizar rápidamente configurac
 * **Visualización Dinámica**: Genera una representación SVG a escala de cada pantalla, con una cuadrícula de módulos, guías y marcador de punto central.
 * **Control de Zoom**: Ajuste de escala global para gestionar varias pantallas en una sola vista.
 * **Exportación**: Exporta tus esquemas directamente a formatos JPG o PDF.
-* **Diseño Responsivo**: Optimizado para escritorio. Aunque funciona en móviles para pantallas pequeñas, no se recomienda para pantallas de más de 10m de ancho.
+* **Diseño Responsivo**: Optimizado para escritorio. Aunque funciona en móviles para pantallas pequeñas, no se recomienda para pantallas de más de 10m de ancho, y en un laptop hasta apróximadamente 60m.
 
 ---
 

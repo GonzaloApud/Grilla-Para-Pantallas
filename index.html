@@ -158,9 +158,21 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.8);
         }
 
-        .screen-svg line { stroke: var(--screen-lines); stroke-width: 0.5; opacity: 0.6; }
-        .screen-svg .crosshair { stroke: var(--accent-color); stroke-width: 1.5; opacity: 0.8;}
-        .screen-svg .center-circle { stroke: var(--accent-color); stroke-width: 1.5; fill: rgba(0,0,0,0.5); }
+        .screen-svg line { 
+            stroke: var(--screen-lines); 
+            stroke-width: 0.5; 
+            opacity: 0.6; 
+        }
+        .screen-svg .crosshair { 
+            stroke: var(--accent-color); 
+            stroke-width: 1.5; 
+            opacity: 0.8;
+        }
+        .screen-svg .center-circle { 
+            stroke: var(--accent-color); 
+            stroke-width: 1.5; 
+            fill: rgba(0,0,0,0.5); 
+        }
 
         .data-panel {
             margin-top: 15px;
@@ -173,9 +185,15 @@
             gap: 4px;
         }
 
-        .data-line { display: flex; justify-content: space-between; gap: 20px;}
+        .data-line { 
+            display: flex; 
+            justify-content: flex-start; 
+            gap: 8px;}
         .data-label { color: #888; }
-        .data-value { font-weight: bold; color: #fff; text-align: right;}
+        .data-value { 
+            font-weight: bold; 
+            color: #fff;
+        }
     </style>
 </head>
 <body>
