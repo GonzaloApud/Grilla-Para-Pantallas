@@ -22,6 +22,8 @@ zoomSlider.addEventListener('input', (e) => {
     renderAllScreens();
 });
 
+document.getElementById('input-project-name').addEventListener('input', renderAllScreens);
+
 function addScreenFromInputs() {
     const title = document.getElementById('input-title').value;
     const w = parseFloat(document.getElementById('input-screen-w').value);
@@ -42,6 +44,24 @@ function addScreenFromInputs() {
 function renderAllScreens() {
     outputArea.innerHTML = ''; 
     const pxPerMeter = parseInt(zoomSlider.value); 
+
+    const pxPerMeter = parseInt(zoomSlider.value); 
+
+    const projectName = document.getElementById('input-project-name').value;
+
+    if (projectName.trim() !== '') {
+        const projectTitle = document.createElement('h1');
+        projectTitle.innerText = projectName;
+        projectTitle.style.width = '100%';
+        projectTitle.style.textAlign = 'center';
+        projectTitle.style.color = '#ffffff';
+        projectTitle.style.fontWeight = 'bold';
+        projectTitle.style.fontSize = '2.5rem';
+        projectTitle.style.margin = '0 0 20px 0';
+        projectTitle.style.textTransform = 'uppercase';
+        
+        outputArea.appendChild(projectTitle);
+    }
 
     screensData.forEach(screen => {
         const screenW_mm = screen.w * 1000;

@@ -38,13 +38,13 @@
             margin-bottom: 20px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             display: grid;
-            grid-template-columns: repeat(2, 3fr);
+            grid-template-columns: repeat(2, 4fr);
             gap: 15px;
         }
 
         @media (max-width: 600px) {
             #controls {
-                grid-template-columns: repeat(1, 6fr);
+                grid-template-columns: repeat(1, 7fr);
                 max-width: 600px;
             }
         }
@@ -75,6 +75,10 @@
             color: #fff;
             padding: 8px;
             border-radius: 4px;
+        }
+
+        .input-group.full-width {
+            grid-column: 1 / -1;
         }
 
         .button-group {
@@ -200,6 +204,10 @@
 
     <div id="controls">
         <h2>Añadir Pantalla al Proyecto</h2>
+        <div class="input-group full-width">
+            <label>Nombre del proyecto:</label>
+            <input type="text" id="input-project-name" value="PROYECTO 1">
+        </div>
         <div class="input-group">
             <label>Título de la Pantalla:</label>
             <input type="text" id="input-title" value="PANTALLA CENTRAL">
@@ -271,6 +279,8 @@
             renderAllScreens();
         });
 
+        document.getElementById('input-project-name').addEventListener('input', renderAllScreens);
+
         function addScreenFromInputs() {
             const title = document.getElementById('input-title').value;
             const w = parseFloat(document.getElementById('input-screen-w').value);
@@ -291,6 +301,22 @@
         function renderAllScreens() {
             outputArea.innerHTML = ''; 
             const pxPerMeter = parseInt(zoomSlider.value); 
+
+            const projectName = document.getElementById('input-project-name').value;
+    
+            if (projectName.trim() !== '') {
+                const projectTitle = document.createElement('h1');
+                projectTitle.innerText = projectName;
+                projectTitle.style.width = '100%';
+                projectTitle.style.textAlign = 'center';
+                projectTitle.style.color = '#ffffff';
+                projectTitle.style.fontWeight = 'bold';
+                projectTitle.style.fontSize = '2.5rem';
+                projectTitle.style.margin = '0 0 20px 0';
+                projectTitle.style.textTransform = 'uppercase';
+                
+                outputArea.appendChild(projectTitle);
+            }
 
             screensData.forEach(screen => {
                 const screenW_mm = screen.w * 1000;

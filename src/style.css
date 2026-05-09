@@ -31,13 +31,13 @@ body {
     margin-bottom: 20px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 4fr);
     gap: 15px;
 }
 
 @media (max-width: 600px) {
     #controls {
-        grid-template-columns: repeat(1, 6fr);
+        grid-template-columns: repeat(1, 7fr);
         max-width: 600px;
     }
 }
@@ -68,6 +68,10 @@ body {
     color: #fff;
     padding: 8px;
     border-radius: 4px;
+}
+
+.input-group.full-width {
+    grid-column: 1 / -1;
 }
 
 .button-group {
