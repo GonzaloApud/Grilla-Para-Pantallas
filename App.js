@@ -283,9 +283,9 @@ async function exportarA_JPG() {
         const datosImagen = lienzo.toDataURL('image/jpeg', 1.0);
         const enlace = document.createElement('a');
         
-        let nombreArchivo = `Proyecto_Hoja_${indice + 1}.jpg`;
+        let nombreArchivo = `Pixel Map ${proyectoVirtual.nombre} diapositiva ${indice + 1}.jpg`;
         if (elementoDiapositiva.classList.contains('diapositiva-resumen')) {
-            nombreArchivo = `Proyecto_Hoja_Resumen.jpg`;
+            nombreArchivo = `Pixel Map ${proyectoVirtual.nombre}resumen.jpg`;
         }
 
         enlace.download = nombreArchivo;
@@ -330,7 +330,7 @@ async function exportarA_PDF() {
         documentoPDF.addImage(datosImagen, 'JPEG', 0, 0, lienzo.width, lienzo.height);
     }
 
-    documentoPDF.save('Esquema_Proyecto_Completo.pdf');
+    documentoPDF.save(`Pixel Map ${proyectoVirtual.nombre}.pdf`);
     document.body.classList.remove('modo-exportacion');
 }
 
