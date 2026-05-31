@@ -89,73 +89,105 @@ function generarDiapositivaResumen(proyecto, nombreProyecto) {
     const contenedor = document.createElement('div');
     contenedor.className = 'contenedor-diapositiva diapositiva-resumen';
 
-    // Agrupar pantallas por nombre de diapositiva
-    const pantallasPorDiapositiva = {};
+    // agrupar pantallas y calcular totales especificos
+    const resumenPorHoja = {};
+    
     proyecto.diapositivas.forEach(diapositiva => {
         const nombreHoja = diapositiva.titulo;
-        if (!pantallasPorDiapositiva[nombreHoja]) {
-            pantallasPorDiapositiva[nombreHoja] = [];
+        if (!resumenPorHoja[nombreHoja]) {
+            resumenPorHoja[nombreHoja] = {
+                pantallas: [],
+                totalModulos: 0,
+                totalMetros: 0,
+                desglose: {}
+            };
         }
-        pantallasPorDiapositiva[nombreHoja].push(...diapositiva.pantallas);
+        
+        diapositiva.pantallas.forEach(pantalla => {
+            resumenPorHoja[nombreHoja].pantallas.push(pantalla);
+            const metricas = pantalla.calcularMetricas();
+            resumenPorHoja[nombreHoja].totalModulos += metricas.totalModulos;
+            resumenPorHoja[nombreHoja].totalMetros += metricas.metrosCuadrados;
+            const claveGrupo = `Pitch ${pantalla.pitch.toFixed(1)} | Módulo ${pantalla.anchoModulo}x${pantalla.altoModulo}`;
+            if (!resumenPorHoja[nombreHoja].desglose[claveGrupo]) {
+                resumenPorHoja[nombreHoja].desglose[claveGrupo] = { modulos: 0, metros: 0 };
+            }
+            resumenPorHoja[nombreHoja].desglose[claveGrupo].modulos += metricas.totalModulos;
+            resumenPorHoja[nombreHoja].desglose[claveGrupo].metros += metricas.metrosCuadrados;
+        });
     });
 
-    let totalModulos = 0;
-    let totalMetrosCuadrados = 0;
-    const gruposDesglose = {};
+    // calcular los totales del proyecto
+    let totalModulosGlobal = 0;
+    let totalMetrosGlobal = 0;
+    const desgloseGlobal = {};
 
     todasLasPantallas.forEach(pantalla => {
         const metricas = pantalla.calcularMetricas();
-        totalModulos += metricas.totalModulos;
-        totalMetrosCuadrados += metricas.metrosCuadrados;
+        totalModulosGlobal += metricas.totalModulos;
+        totalMetrosGlobal += metricas.metrosCuadrados;
         const claveGrupo = `Pitch ${pantalla.pitch.toFixed(1)} | Módulo ${pantalla.anchoModulo}x${pantalla.altoModulo}`;
         
-        if(!gruposDesglose[claveGrupo]) {
-            gruposDesglose[claveGrupo] = { modulos: 0, metros: 0 };
+        if(!desgloseGlobal[claveGrupo]) {
+            desgloseGlobal[claveGrupo] = { modulos: 0, metros: 0 };
         }
-        gruposDesglose[claveGrupo].modulos += metricas.totalModulos;
-        gruposDesglose[claveGrupo].metros += metricas.metrosCuadrados;
+        desgloseGlobal[claveGrupo].modulos += metricas.totalModulos;
+        desgloseGlobal[claveGrupo].metros += metricas.metrosCuadrados;
     });
 
+    // generar HTML
     const html = `
         <div class="encabezado-diapositiva">
             <h1>${nombreProyecto}</h1>
-            <h2>RESUMEN</h2>
+            <h2>RESUMEN Y LISTA DE BODEGA</h2>
         </div>
         <div style="color: #ffffff; font-size: 1.1rem; width: 100%; max-width: 900px; margin: 0 auto; line-height: 1.8; padding-bottom: 20px;">
             
-            <h3 style="color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Pantallas</h3>
+            <h3 style="color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Detalle por Hoja</h3>
             <ul style="list-style-type: none; padding-left: 0; margin-bottom: 25px;">
-                ${Object.keys(pantallasPorDiapositiva).length > 0 ? 
-                    Object.entries(pantallasPorDiapositiva).map(([nombreHoja, pantallas]) => `
-                        <li style="margin-bottom: 15px;">
+                ${Object.keys(resumenPorHoja).length > 0 ? 
+                    Object.entries(resumenPorHoja).map(([nombreHoja, datos]) => `
+                        <li style="margin-bottom: 25px; background: #1a1a1a; padding: 15px; border-radius: 8px; border: 1px solid #333;">
                             <strong style="color: #fff; font-size: 1.2rem;">${nombreHoja}</strong>
-                            <ul style="list-style-type: square; margin-top: 5px; padding-left: 40px; color: #ccc;">
-                                ${pantallas.length > 0 
-                                    ? pantallas.map(p => `<li><strong>${p.titulo}:</strong> ${p.ancho.toFixed(1)}x${p.alto.toFixed(1)} m</li>`).join('') 
+                            
+                            <ul style="list-style-type: square; margin-top: 10px; padding-left: 40px; color: #ccc; margin-bottom: 15px;">
+                                ${datos.pantallas.length > 0 
+                                    ? datos.pantallas.map(p => `<li><strong>${p.titulo}:</strong> ${p.ancho.toFixed(1)}x${p.alto.toFixed(1)} m</li>`).join('') 
                                     : '<li><em>Sin pantallas asignadas.</em></li>'}
                             </ul>
+                            
+                            ${Object.keys(datos.desglose).length > 0 ? `
+                                    <strong style="color: #fff;">Desglose por Tipo de Módulo:</strong>
+                                    <ul style="margin-top: 5px; margin-bottom: 10px; padding-left: 20px; list-style-type: circle;">
+                                        ${Object.entries(datos.desglose).map(([clave, valores]) => `
+                                            <li><span style="color: var(--accent-color); font-weight: bold;">${clave}</span> -> ${valores.modulos} Módulos | ${valores.metros.toFixed(1)} m²</li>
+                                        `).join('')}
+                                    </ul>
+                                    <strong style="color: #ccc;">Total Diapositiva:</strong> ${datos.totalModulos} Módulos | ${datos.totalMetros.toFixed(1)} m²
+                            ` : ''}
                         </li>
                     `).join('') 
                 : '<li>No hay hojas creadas.</li>'}
             </ul>
 
-            <h3 style="color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Totales de Módulos y Metros</h3>
-            <p><strong>Suma Total de Módulos:</strong> ${totalModulos}</p>
-            <p><strong>Suma Total de Superficie:</strong> ${totalMetrosCuadrados.toFixed(1)} m²</p>
+            <h3 style="color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Resumen Total del Proyecto</h3>
             
-            ${Object.keys(gruposDesglose).length > 0 ? `
-            <div style="background-color: #222; padding: 20px; border-radius: 8px; margin-top: 20px; border-left: 4px solid var(--accent-color);">
-                <h4 style="margin-top: 0; color: #ccc;">Desglose por Tipo de Módulo:</h4>
-                <ul style="margin-bottom: 0;">
-                    ${Object.entries(gruposDesglose).map(([clave, valores]) => `
-                        <li style="margin-bottom: 10px;">
-                            <span style="color: var(--accent-color); font-weight: bold;">${clave}</span><br>
-                            Suma: ${valores.modulos} Módulos | Superficie: ${valores.metros.toFixed(1)} m²
-                        </li>
-                    `).join('')}
-                </ul>
-            </div>
+            ${Object.keys(desgloseGlobal).length > 0 ? `
+            <h4 style="margin-top: 0; color: #ccc;">Desglose por Tipo de Módulo:</h4>
+            <ul style="margin-bottom: 0;">
+                ${Object.entries(desgloseGlobal).map(([clave, valores]) => `
+                    <li style="margin-bottom: 10px;">
+                        <span style="color: var(--accent-color); font-weight: bold;">${clave}</span> -> Suma: ${valores.modulos} Módulos | Superficie: ${valores.metros.toFixed(1)} m² <br>
+                    </li>
+                `).join('')}
+            </ul>
             ` : ''}
+
+            <div style="margin-top: 20px; font-size: 1.2rem; background: #222; padding: 15px; border-radius: 8px;">
+                <p style="margin: 5px 0;"><strong>Suma Total de Módulos:</strong> <span style="color: #fff;">${totalModulosGlobal}</span></p>
+                <p style="margin: 5px 0;"><strong>Suma Total de Metros Cuadrados:</strong> <span style="color: #fff;">${totalMetrosGlobal.toFixed(1)} m²</span></p>
+            </div>
+            
         </div>
     `;
     
