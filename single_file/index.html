@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador Multi-Pantalla LED</title>
+    <link rel="icon" type="image/png" href="images/ledsupport.jpeg?v=2">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --panel-bg: #2d2d2d;
+            --text-color: #f0f0f0;
+            --accent-color: #00bcd4;
+            --border-color: #444;
+            --screen-bg: #404040;
+            --screen-lines: #ffffff;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --danger-color: #e53935;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #panel-control {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            width: 90%;
+            max-width: 900px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            #panel-control { grid-template-columns: 1fr; }
+        }
+
+        h2, h3 {
+            grid-column: 1 / -1;
+            margin-top: 0;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .grupo-entrada {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grupo-entrada label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        .grupo-entrada input, .grupo-entrada select {
+            background-color: #333;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .ancho-completo { grid-column: 1 / -1; }
+
+        .grupo-botones {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            flex: 1;
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            min-width: 150px;
+        }
+
+        button:hover { background-color: #0097a7; }
+        button.peligro { background-color: var(--danger-color); }
+        button.peligro:hover { background-color: #c62828; }
+        button.exito { background-color: #4CAF50; }
+        button.exito:hover { background-color: #388E3C; }
+
+        #area-salida {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .contenedor-diapositiva {
+            width: 100%;
+            max-width: 1200px;
+            background-color: #000000;
+            border: 2px dashed #666;
+            padding: 40px;
+            box-sizing: border-box;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .encabezado-diapositiva {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .encabezado-diapositiva h1 {
+            color: #ffffff;
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+        }
+
+        .encabezado-diapositiva h2 {
+            color: var(--accent-color);
+            font-size: 1.8rem;
+            margin: 0;
+            border: none;
+        }
+
+        .area-pantallas {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 40px;
+            min-height: 200px;
+        }
+
+        .envoltura-pantalla {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #111;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .titulo-pantalla {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .svg-pantalla {
+            background-color: var(--screen-bg);
+            border: 2px solid #000;
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+        }
+
+        .svg-pantalla line { stroke: var(--screen-lines); stroke-width: 0.5; opacity: 0.6; }
+        .svg-pantalla .mira { stroke: var(--accent-color); stroke-width: 1.5; opacity: 0.8; }
+        .svg-pantalla .circulo-central { stroke: var(--accent-color); stroke-width: 1.5; fill: rgba(0,0,0,0.5); }
+
+        .panel-datos {
+            margin-top: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: #ddd;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .linea-datos { display: flex; justify-content: flex-start; gap: 8px; }
+        .etiqueta-datos { color: #888; }
+        .valor-datos { font-weight: bold; color: #fff; }
+
+        .banner-informacion {
+            background-color: #222;
+            border-top: 2px solid var(--accent-color);
+            padding: 15px;
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-around;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .banner-global {
+            width: 100%;
+            max-width: 1200px;
+            background-color: var(--accent-color);
+            color: #000;
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-sizing: border-box;
+        }
+
+        .controles-diapositiva-edicion {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background: rgba(0,0,0,0.7);
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .contenedor-diapositiva:hover .controles-diapositiva-edicion { opacity: 1; }
+
+        .boton-eliminar {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            min-width: 0;
+            padding: 0;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .envoltura-pantalla:hover .boton-eliminar { opacity: 1; }
+
+        .modo-exportacion .ocultar-exportacion {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="panel-control">
+        <h2>Gestión del Proyecto</h2>
+        
+        <div class="grupo-entrada ancho-completo">
+            <label>Nombre General del Proyecto:</label>
+            <input type="text" id="entrada-nombre-proyecto" value="PROYECTO 1">
+        </div>
+
+        <h3>Gestión de Diapositivas</h3>
+        
+        <div class="grupo-entrada">
+            <label>Diapositiva Activa para Editar:</label>
+            <select id="selector-diapositiva"></select>
+        </div>
+        
+        <div class="grupo-entrada">
+            <label>Título Nueva Diapositiva:</label>
+            <input type="text" id="entrada-titulo-diapositiva" value="Día 1">
+        </div>
+
+        <div class="grupo-botones">
+            <button id="boton-agregar-diapositiva">Añadir Nueva Diapositiva</button>
+        </div>
+
+        <h3>Añadir Pantalla a la Diapositiva Activa</h3>
+
+        <div class="grupo-entrada">
+            <label>Título de la Pantalla:</label>
+            <input type="text" id="entrada-titulo-pantalla" value="PANTALLA 1">
+        </div>
+        <div class="grupo-entrada">
+            <label>Pitch (mm):</label>
+            <input type="number" id="entrada-pitch" value="3.9" step="0.1" min="0.1">
+        </div>
+        <div class="grupo-entrada">
+            <label>Ancho (m):</label>
+            <input type="number" id="entrada-ancho-pantalla" value="3.0" step="0.1" min="0.1">
+        </div>
+        <div class="grupo-entrada">
+            <label>Alto (m):</label>
+            <input type="number" id="entrada-alto-pantalla" value="2.0" step="0.1" min="0.1">
+        </div>
+        <div class="grupo-entrada">
+            <label>Ancho Módulo (cm):</label>
+            <input type="number" id="entrada-ancho-modulo" value="50" step="1" min="10">
+        </div>
+        <div class="grupo-entrada">
+            <label>Alto Módulo (cm):</label>
+            <input type="number" id="entrada-alto-modulo" value="50" step="1" min="10">
+        </div>
+        
+        <div class="grupo-botones">
+            <button id="boton-agregar-pantalla">Añadir Pantalla</button>
+        </div>
+
+        <div class="grupo-botones">
+            <button id="boton-exportar-jpg" class="exito">⬇ Exportar a JPG (Por Diapositiva)</button>
+            <button id="boton-exportar-pdf" class="exito">⬇ Exportar a PDF (Documento Completo)</button>
+        </div>
+    </div>
+
+    <div id="area-salida"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        // ESTRUCTURAS DE DATOS
+        
+        class DatosPantalla {
+            constructor(id, titulo, ancho, alto, pitch, anchoModulo, altoModulo) {
+                this.identificador = id;
+                this.titulo = titulo;
+                this.ancho = parseFloat(ancho);
+                this.alto = parseFloat(alto);
+                this.pitch = parseFloat(pitch);
+                this.anchoModulo = parseFloat(anchoModulo);
+                this.altoModulo = parseFloat(altoModulo);
+            }
+
+            calcularMetricas() {
+                const anchoModuloMetros = this.anchoModulo / 100;
+                const altoModuloMetros = this.altoModulo / 100;
+                
+                const columnas = Math.ceil(this.ancho / anchoModuloMetros);
+                const filas = Math.ceil(this.alto / altoModuloMetros);
+                const totalModulos = columnas * filas;
+                
+                const pixelesHorizontales = Math.round((this.anchoModulo * 10) / this.pitch) * columnas;
+                const pixelesVerticales = Math.round((this.altoModulo * 10) / this.pitch) * filas;
+                
+                const metrosCuadrados = this.ancho * this.alto;
+
+                return { columnas, filas, totalModulos, pixelesHorizontales, pixelesVerticales, metrosCuadrados };
+            }
+        }
+
+        class DatosDiapositiva {
+            constructor(id, titulo) {
+                this.identificador = id;
+                this.titulo = titulo;
+                this.pantallas = [];
+                this.escalaZoom = 120;
+            }
+
+            agregarPantalla(pantalla) {
+                this.pantallas.push(pantalla);
+            }
+
+            eliminarPantalla(idPantalla) {
+                this.pantallas = this.pantallas.filter(p => p.identificador !== idPantalla);
+            }
+
+            calcularTotales() {
+                let totalModulos = 0;
+                let totalMetrosCuadrados = 0;
+
+                this.pantallas.forEach(pantalla => {
+                    const metricas = pantalla.calcularMetricas();
+                    totalModulos += metricas.totalModulos;
+                    totalMetrosCuadrados += metricas.metrosCuadrados;
+                });
+
+                return { totalModulos, totalMetrosCuadrados };
+            }
+        }
+
+        class DatosProyecto {
+            constructor() {
+                this.nombre = "PROYECTO 1";
+                this.diapositivas = [];
+                this.contadorPantallas = 0;
+                this.contadorDiapositivas = 0;
+            }
+
+            agregarDiapositiva(titulo) {
+                this.contadorDiapositivas++;
+                const nuevaDiapositiva = new DatosDiapositiva(`diapositiva-${this.contadorDiapositivas}`, titulo);
+                this.diapositivas.push(nuevaDiapositiva);
+                return nuevaDiapositiva;
+            }
+
+            eliminarDiapositiva(idDiapositiva) {
+                this.diapositivas = this.diapositivas.filter(d => d.identificador !== idDiapositiva);
+            }
+
+            obtenerDiapositiva(idDiapositiva) {
+                return this.diapositivas.find(d => d.identificador === idDiapositiva);
+            }
+        }
+
+        // COMPONENTES DE INTERFAZ
+
+        // pantalla
+        class ComponentePantalla {
+            static renderizar(pantalla, pixelesPorMetro, funcionEliminar) {
+                const metricas = pantalla.calcularMetricas();
+                const anchoModuloMetros = pantalla.anchoModulo / 100;
+                const altoModuloMetros = pantalla.altoModulo / 100;
+
+                const contenedor = document.createElement('div');
+                contenedor.className = 'envoltura-pantalla';
+                contenedor.id = pantalla.identificador;
+
+                // Boton Eliminar
+                const botonEliminar = document.createElement('button');
+                botonEliminar.className = 'boton-eliminar ocultar-exportacion';
+                botonEliminar.innerHTML = 'X';
+                botonEliminar.title = 'Eliminar Pantalla';
+                botonEliminar.onclick = () => funcionEliminar(pantalla.identificador);
+                contenedor.appendChild(botonEliminar);
+
+                const tituloElemento = document.createElement('div');
+                tituloElemento.className = 'titulo-pantalla';
+                tituloElemento.innerText = pantalla.titulo;
+                contenedor.appendChild(tituloElemento);
+
+                // Construccion del SVG
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                svg.classList.add('svg-pantalla');
+                
+                svg.style.width = `${pantalla.ancho * pixelesPorMetro}px`;
+                svg.style.height = `${pantalla.alto * pixelesPorMetro}px`;
+                
+                const escalaSVG = 100; 
+                svg.setAttribute('viewBox', `0 0 ${pantalla.ancho * escalaSVG} ${pantalla.alto * escalaSVG}`);
+
+                // Grilla Vertical
+                for (let i = 1; i < metricas.columnas; i++) {
+                    const linea = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    const posicionX = i * anchoModuloMetros * escalaSVG;
+                    linea.setAttribute('x1', posicionX); linea.setAttribute('y1', 0);
+                    linea.setAttribute('x2', posicionX); linea.setAttribute('y2', pantalla.alto * escalaSVG);
+                    svg.appendChild(linea);
+                }
+
+                // Grilla Horizontal
+                for (let j = 1; j < metricas.filas; j++) {
+                    const linea = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    const posicionY = j * altoModuloMetros * escalaSVG;
+                    linea.setAttribute('x1', 0); linea.setAttribute('y1', posicionY);
+                    linea.setAttribute('x2', pantalla.ancho * escalaSVG); linea.setAttribute('y2', posicionY);
+                    svg.appendChild(linea);
+                }
+
+                // Diagonales
+                const diagonal1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                diagonal1.setAttribute('x1', 0); diagonal1.setAttribute('y1', 0);
+                diagonal1.setAttribute('x2', pantalla.ancho * escalaSVG); diagonal1.setAttribute('y2', pantalla.alto * escalaSVG);
+                diagonal1.setAttribute('class', 'mira');
+                svg.appendChild(diagonal1);
+
+                const diagonal2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                diagonal2.setAttribute('x1', pantalla.ancho * escalaSVG); diagonal2.setAttribute('y1', 0);
+                diagonal2.setAttribute('x2', 0); diagonal2.setAttribute('y2', pantalla.alto * escalaSVG);
+                diagonal2.setAttribute('class', 'mira');
+                svg.appendChild(diagonal2);
+
+                // circulo central y texto de resolucion
+                const centroX = (pantalla.ancho * escalaSVG) / 2;
+                const centroY = (pantalla.alto * escalaSVG) / 2;
+                const dimensionMinima = Math.min(pantalla.ancho * escalaSVG, pantalla.alto * escalaSVG);
+
+                const circulo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circulo.setAttribute('cx', centroX); circulo.setAttribute('cy', centroY);
+                circulo.setAttribute('r', dimensionMinima * 0.15);
+                circulo.setAttribute('class', 'circulo-central');
+                svg.appendChild(circulo);
+
+                const textoResolucion = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                textoResolucion.setAttribute('x', centroX); 
+                textoResolucion.setAttribute('y', centroY + (dimensionMinima * 0.04));
+                textoResolucion.setAttribute('fill', '#fff'); 
+                textoResolucion.setAttribute('text-anchor', 'middle');
+                textoResolucion.setAttribute('font-size', dimensionMinima * 0.12);
+                textoResolucion.setAttribute('font-weight', 'bold');
+                textoResolucion.textContent = `${metricas.pixelesHorizontales}x${metricas.pixelesVerticales}`;
+                svg.appendChild(textoResolucion);
+
+                // marca de agua
+                const marcaAgua = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                marcaAgua.setAttribute('x', (pantalla.ancho * escalaSVG) - (dimensionMinima * 0.05));
+                marcaAgua.setAttribute('y', (pantalla.alto * escalaSVG) - (dimensionMinima * 0.05));
+                marcaAgua.setAttribute('fill', 'rgba(255, 255, 255, 0.3)');
+                marcaAgua.setAttribute('text-anchor', 'end');
+                marcaAgua.setAttribute('font-size', dimensionMinima * 0.05);
+                marcaAgua.setAttribute('font-family', 'Arial');
+                marcaAgua.textContent = "By Gonzalo Apud";
+                svg.appendChild(marcaAgua);
+
+                contenedor.appendChild(svg);
+
+                // panel de datos inferior
+                const panelDatos = document.createElement('div');
+                panelDatos.className = 'panel-datos';
+                panelDatos.innerHTML = `
+                <div class="linea-datos"><span class="etiqueta-datos">Medidas:</span><span class="valor-datos">${pantalla.ancho.toFixed(1)} x ${pantalla.alto.toFixed(1)} m²</span></div>
+                    <div class="linea-datos"><span class="etiqueta-datos">Pitch:</span><span class="valor-datos">${pantalla.pitch.toFixed(1)} mm</span></div>
+                    <div class="linea-datos"><span class="etiqueta-datos">Resolución:</span><span class="valor-datos">${metricas.pixelesHorizontales} x ${metricas.pixelesVerticales} px</span></div>
+                    <div class="linea-datos"><span class="etiqueta-datos">Módulos:</span><span class="valor-datos">${metricas.columnas} x ${metricas.filas} (${pantalla.anchoModulo}x${pantalla.altoModulo} cm)</span></div>
+                    <div class="linea-datos"><span class="etiqueta-datos">Total Módulos:</span><span class="valor-datos">${metricas.totalModulos}</span></div>
+                `;
+                contenedor.appendChild(panelDatos);
+
+                return contenedor;
+            }
+        }
+
+        // diapositiva
+
+        class ComponenteDiapositiva {
+            static renderizar(diapositiva, nombreProyecto, funcionEliminarPantalla, funcionEliminarDiapositiva, funcionCambiarZoom) {
+                const contenedor = document.createElement('div');
+                contenedor.className = 'contenedor-diapositiva';
+                contenedor.id = diapositiva.identificador;
+
+                // controles de edicion de diapositiva
+                const controlesEdicion = document.createElement('div');
+                controlesEdicion.className = 'controles-diapositiva-edicion ocultar-exportacion';
+                
+                const etiquetaZoom = document.createElement('label');
+                etiquetaZoom.style.color = "white";
+                etiquetaZoom.style.fontSize = "0.8rem";
+                etiquetaZoom.innerText = `Zoom: ${diapositiva.escalaZoom} Px/M`;
+                
+                const controlZoom = document.createElement('input');
+                controlZoom.type = 'range';
+                controlZoom.min = '30';
+                controlZoom.max = '300';
+                controlZoom.value = diapositiva.escalaZoom;
+                controlZoom.oninput = (evento) => {
+                    const nuevoValor = evento.target.value;
+                    etiquetaZoom.innerText = `Zoom: ${nuevoValor} Px/M`;
+                    funcionCambiarZoom(diapositiva.identificador, nuevoValor);
+                };
+
+                const botonEliminarDiapositiva = document.createElement('button');
+                botonEliminarDiapositiva.className = 'peligro';
+                botonEliminarDiapositiva.style.padding = '5px 10px';
+                botonEliminarDiapositiva.style.minWidth = 'auto';
+                botonEliminarDiapositiva.innerText = 'Eliminar Hoja';
+                botonEliminarDiapositiva.onclick = () => funcionEliminarDiapositiva(diapositiva.identificador);
+
+                controlesEdicion.appendChild(etiquetaZoom);
+                controlesEdicion.appendChild(controlZoom);
+                controlesEdicion.appendChild(botonEliminarDiapositiva);
+                contenedor.appendChild(controlesEdicion);
+
+                // encabezado
+                const encabezado = document.createElement('div');
+                encabezado.className = 'encabezado-diapositiva';
+                encabezado.innerHTML = `
+                    <h1>${nombreProyecto}</h1>
+                    <h2>${diapositiva.titulo}</h2>
+                `;
+                contenedor.appendChild(encabezado);
+
+                // area de pantallas
+                const areaPantallas = document.createElement('div');
+                areaPantallas.className = 'area-pantallas';
+                
+                if (diapositiva.pantallas.length === 0) {
+                    areaPantallas.innerHTML = '<p style="color:#666; font-style:italic;">No hay pantallas en esta hoja. Añade una desde el panel.</p>';
+                } else {
+                    diapositiva.pantallas.forEach(pantalla => {
+                        const elementoPantalla = ComponentePantalla.renderizar(
+                            pantalla, 
+                            diapositiva.escalaZoom, 
+                            (idPantalla) => funcionEliminarPantalla(diapositiva.identificador, idPantalla)
+                        );
+                        areaPantallas.appendChild(elementoPantalla);
+                    });
+                }
+                contenedor.appendChild(areaPantallas);
+
+                // banner inferior de diapo
+                const totales = diapositiva.calcularTotales();
+                const banner = document.createElement('div');
+                banner.className = 'banner-informacion';
+                banner.innerHTML = `
+                    <span>Total Módulos: ${totales.totalModulos}</span>
+                    <span>Total Superficie: ${totales.totalMetrosCuadrados.toFixed(2)} m²</span>
+                `;
+                contenedor.appendChild(banner);
+
+                return contenedor;
+            }
+        }
+
+        // CONTROLADOR PRINCIPAL
+
+        const proyectoVirtual = new DatosProyecto();
+        const areaSalida = document.getElementById('area-salida');
+        const selectorDiapositiva = document.getElementById('selector-diapositiva');
+        const entradaNombreProyecto = document.getElementById('entrada-nombre-proyecto');
+
+        // inicializacion
+        function iniciarAplicacion() {
+            proyectoVirtual.agregarDiapositiva("Día 1");
+            actualizarSelectorDiapositivas();
+            
+            // Ajuste para que el siguiente título por defecto sea Día 2 al cargar
+            document.getElementById('entrada-titulo-diapositiva').value = "Día 2";
+            
+            renderizarTodo();
+        }
+
+        // funciones de actualizacion de interfaz
+        function actualizarSelectorDiapositivas() {
+            const valorActual = selectorDiapositiva.value;
+            selectorDiapositiva.innerHTML = '';
+            
+            proyectoVirtual.diapositivas.forEach(diapositiva => {
+                const opcion = document.createElement('option');
+                opcion.value = diapositiva.identificador;
+                opcion.textContent = diapositiva.titulo;
+                selectorDiapositiva.appendChild(opcion);
+            });
+
+            if (valorActual && proyectoVirtual.obtenerDiapositiva(valorActual)) {
+                selectorDiapositiva.value = valorActual;
+            } else if (proyectoVirtual.diapositivas.length > 0) {
+                selectorDiapositiva.value = proyectoVirtual.diapositivas[0].identificador;
+            }
+        }
+
+        function renderizarTodo() {
+            areaSalida.innerHTML = '';
+            const nombreProyecto = entradaNombreProyecto.value || "PROYECTO SIN TÍTULO";
+
+            // renderizar todas las diapositivas
+            proyectoVirtual.diapositivas.forEach(diapositiva => {
+                const elementoDiapositiva = ComponenteDiapositiva.renderizar(
+                    diapositiva, 
+                    nombreProyecto,
+                    manejarEliminarPantalla,
+                    manejarEliminarDiapositiva,
+                    manejarCambioZoom
+                );
+                areaSalida.appendChild(elementoDiapositiva);
+            });
+
+            // renderizar la diapositiva final de resumen
+            const elementoResumen = generarDiapositivaResumen(proyectoVirtual, nombreProyecto);
+            if (elementoResumen) {
+                areaSalida.appendChild(elementoResumen);
+            }
+        }
+
+        function generarDiapositivaResumen(proyecto, nombreProyecto) {
+            const todasLasPantallas = proyecto.diapositivas.flatMap(d => d.pantallas);
+            if (todasLasPantallas.length === 0 && proyecto.diapositivas.length === 0) return null;
+
+            const contenedor = document.createElement('div');
+            contenedor.className = 'contenedor-diapositiva diapositiva-resumen';
+
+            // Agrupar pantallas por nombre de diapositiva
+            const pantallasPorDiapositiva = {};
+            proyecto.diapositivas.forEach(diapositiva => {
+                const nombreHoja = diapositiva.titulo;
+                if (!pantallasPorDiapositiva[nombreHoja]) {
+                    pantallasPorDiapositiva[nombreHoja] = [];
+                }
+                pantallasPorDiapositiva[nombreHoja].push(...diapositiva.pantallas);
+            });
+
+            let totalModulos = 0;
+            let totalMetrosCuadrados = 0;
+            const gruposDesglose = {};
+
+            todasLasPantallas.forEach(pantalla => {
+                const metricas = pantalla.calcularMetricas();
+                totalModulos += metricas.totalModulos;
+                totalMetrosCuadrados += metricas.metrosCuadrados;
+                const claveGrupo = `Pitch ${pantalla.pitch.toFixed(1)} | Módulo ${pantalla.anchoModulo}x${pantalla.altoModulo}`;
+                
+                if(!gruposDesglose[claveGrupo]) {
+                    gruposDesglose[claveGrupo] = { modulos: 0, metros: 0 };
+                }
+                gruposDesglose[claveGrupo].modulos += metricas.totalModulos;
+                gruposDesglose[claveGrupo].metros += metricas.metrosCuadrados;
+            });
+
+            const html = `
+                <div class="encabezado-diapositiva">
+                    <h1>${nombreProyecto}</h1>
+                    <h2>RESUMEN</h2>
+                </div>
+                <div style="color: #ffffff; font-size: 1.1rem; width: 100%; max-width: 900px; margin: 0 auto; line-height: 1.8; padding-bottom: 20px;">
+                    
+                    <h3 style="color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Pantallas</h3>
+                    <ul style="list-style-type: none; padding-left: 0; margin-bottom: 25px;">
+                        ${Object.keys(pantallasPorDiapositiva).length > 0 ? 
+                            Object.entries(pantallasPorDiapositiva).map(([nombreHoja, pantallas]) => `
+                                <li style="margin-bottom: 15px;">
+                                    <strong style="color: #fff; font-size: 1.2rem;">${nombreHoja}</strong>
+                                    <ul style="list-style-type: square; margin-top: 5px; padding-left: 40px; color: #ccc;">
+                                        ${pantallas.length > 0 
+                                            ? pantallas.map(p => `<li><strong>${p.titulo}:</strong> ${p.ancho.toFixed(1)}x${p.alto.toFixed(1)} m</li>`).join('') 
+                                            : '<li><em>Sin pantallas asignadas.</em></li>'}
+                                    </ul>
+                                </li>
+                            `).join('') 
+                        : '<li>No hay hojas creadas.</li>'}
+                    </ul>
+
+                    <h3 style="color: var(--accent-color); border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Totales de Módulos y Metros</h3>
+                    <p><strong>Suma Total de Módulos:</strong> ${totalModulos}</p>
+                    <p><strong>Suma Total de Superficie:</strong> ${totalMetrosCuadrados.toFixed(1)} m²</p>
+                    
+                    ${Object.keys(gruposDesglose).length > 0 ? `
+                    <div style="background-color: #222; padding: 20px; border-radius: 8px; margin-top: 20px; border-left: 4px solid var(--accent-color);">
+                        <h4 style="margin-top: 0; color: #ccc;">Desglose por Tipo de Módulo:</h4>
+                        <ul style="margin-bottom: 0;">
+                            ${Object.entries(gruposDesglose).map(([clave, valores]) => `
+                                <li style="margin-bottom: 10px;">
+                                    <span style="color: var(--accent-color); font-weight: bold;">${clave}</span><br>
+                                    Suma: ${valores.modulos} Módulos | Superficie: ${valores.metros.toFixed(1)} m²
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            contenedor.innerHTML = html;
+            return contenedor;
+        }
+
+        // manejadores de eventos
+        document.getElementById('boton-agregar-diapositiva').addEventListener('click', () => {
+            const titulo = document.getElementById('entrada-titulo-diapositiva').value;
+            if (!titulo) return alert("Ingrese un título para la diapositiva.");
+            
+            const nuevaDiapositiva = proyectoVirtual.agregarDiapositiva(titulo);
+            actualizarSelectorDiapositivas();
+            selectorDiapositiva.value = nuevaDiapositiva.identificador;
+            
+            document.getElementById('entrada-titulo-diapositiva').value = "Día " + (proyectoVirtual.diapositivas.length + 1);
+            renderizarTodo();
+        });
+
+        document.getElementById('boton-agregar-pantalla').addEventListener('click', () => {
+            const idDiapositivaActiva = selectorDiapositiva.value;
+            if (!idDiapositivaActiva) return alert("No hay ninguna diapositiva seleccionada.");
+
+            const diapositivaActiva = proyectoVirtual.obtenerDiapositiva(idDiapositivaActiva);
+
+            const titulo = document.getElementById('entrada-titulo-pantalla').value;
+            const ancho = document.getElementById('entrada-ancho-pantalla').value;
+            const alto = document.getElementById('entrada-alto-pantalla').value;
+            const pitch = document.getElementById('entrada-pitch').value;
+            const anchoModulo = document.getElementById('entrada-ancho-modulo').value;
+            const altoModulo = document.getElementById('entrada-alto-modulo').value;
+
+            if(!titulo || !ancho || !alto || !pitch || !anchoModulo || !altoModulo) return;
+
+            proyectoVirtual.contadorPantallas++;
+            const nuevaPantalla = new DatosPantalla(
+                `pantalla-${proyectoVirtual.contadorPantallas}`,
+                titulo, ancho, alto, pitch, anchoModulo, altoModulo
+            );
+
+            diapositivaActiva.agregarPantalla(nuevaPantalla);
+            document.getElementById('entrada-titulo-pantalla').value = "PANTALLA " + (diapositivaActiva.pantallas.length + 1);
+            renderizarTodo();
+        });
+
+        entradaNombreProyecto.addEventListener('input', renderizarTodo);
+
+        function manejarEliminarPantalla(idDiapositiva, idPantalla) {
+            const diapositiva = proyectoVirtual.obtenerDiapositiva(idDiapositiva);
+            if(diapositiva) {
+                diapositiva.eliminarPantalla(idPantalla);
+                renderizarTodo();
+            }
+        }
+
+        function manejarEliminarDiapositiva(idDiapositiva) {
+            if(confirm("¿Estás seguro de que deseas eliminar esta hoja y todas sus pantallas?")) {
+                proyectoVirtual.eliminarDiapositiva(idDiapositiva);
+                actualizarSelectorDiapositivas();
+                
+                // ajustar el contador de la próxima diapo
+                document.getElementById('entrada-titulo-diapositiva').value = "Día " + (proyectoVirtual.diapositivas.length + 1);
+                
+                renderizarTodo();
+            }
+        }
+
+        function manejarCambioZoom(idDiapositiva, nuevoZoom) {
+            const diapositiva = proyectoVirtual.obtenerDiapositiva(idDiapositiva);
+            if(diapositiva) {
+                diapositiva.escalaZoom = parseInt(nuevoZoom);
+                renderizarTodo();
+            }
+        }
+
+        // FUNCIONES DE EXPORTACION
+
+        async function exportarA_JPG() {
+            const diapositivas = document.querySelectorAll('.contenedor-diapositiva');
+            if (diapositivas.length === 0) return alert("Añade al menos una hoja antes de exportar.");
+
+            document.body.classList.add('modo-exportacion');
+
+            for (let indice = 0; indice < diapositivas.length; indice++) {
+                const elementoDiapositiva = diapositivas[indice];
+                const lienzo = await html2canvas(elementoDiapositiva, { 
+                    scale: 2, 
+                    backgroundColor: '#000000',
+                    useCORS: true 
+                });
+                
+                const datosImagen = lienzo.toDataURL('image/jpeg', 1.0);
+                const enlace = document.createElement('a');
+                
+                let nombreArchivo = `Proyecto_Hoja_${indice + 1}.jpg`;
+                if (elementoDiapositiva.classList.contains('diapositiva-resumen')) {
+                    nombreArchivo = `Proyecto_Hoja_Resumen.jpg`;
+                }
+
+                enlace.download = nombreArchivo;
+                enlace.href = datosImagen;
+                enlace.click();
+
+                await new Promise(resolver => setTimeout(resolver, 500));
+            }
+
+            document.body.classList.remove('modo-exportacion');
+        }
+
+        async function exportarA_PDF() {
+            const diapositivas = document.querySelectorAll('.contenedor-diapositiva');
+            if (diapositivas.length === 0) return alert("Añade al menos una hoja antes de exportar.");
+
+            document.body.classList.add('modo-exportacion');
+            const { jsPDF } = window.jspdf;
+            let documentoPDF = null;
+
+            for (let indice = 0; indice < diapositivas.length; indice++) {
+                const elementoDiapositiva = diapositivas[indice];
+                const lienzo = await html2canvas(elementoDiapositiva, { 
+                    scale: 2, 
+                    backgroundColor: '#000000',
+                    useCORS: true 
+                });
+                
+                const datosImagen = lienzo.toDataURL('image/jpeg', 1.0);
+                const orientacion = lienzo.width > lienzo.height ? 'landscape' : 'portrait';
+                
+                if (indice === 0) {
+                    documentoPDF = new jsPDF({
+                        orientation: orientacion,
+                        unit: 'px',
+                        format: [lienzo.width, lienzo.height]
+                    });
+                } else {
+                    documentoPDF.addPage([lienzo.width, lienzo.height], orientacion);
+                }
+                
+                documentoPDF.addImage(datosImagen, 'JPEG', 0, 0, lienzo.width, lienzo.height);
+            }
+
+            documentoPDF.save('Esquema_Proyecto_Completo.pdf');
+            document.body.classList.remove('modo-exportacion');
+        }
+
+        document.getElementById('boton-exportar-jpg').addEventListener('click', exportarA_JPG);
+        document.getElementById('boton-exportar-pdf').addEventListener('click', exportarA_PDF);
+        iniciarAplicacion();
+    </script>
+</body>
+</html>

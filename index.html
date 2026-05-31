@@ -4,471 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Generador Multi-Pantalla LED</title>
-    <style>
-        :root {
-            --bg-color: #1a1a1a;
-            --panel-bg: #2d2d2d;
-            --text-color: #f0f0f0;
-            --accent-color: #00bcd4;
-            --border-color: #444;
-            --screen-bg: #404040;
-            --screen-lines: #ffffff;
-            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: var(--font-family);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        #controls {
-            background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            width: 90%;
-            max-width: 800px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-            display: grid;
-            grid-template-columns: repeat(2, 4fr);
-            gap: 15px;
-        }
-
-        @media (max-width: 600px) {
-            #controls {
-                grid-template-columns: repeat(1, 7fr);
-                max-width: 600px;
-            }
-        }
-
-        #controls h2 {
-            grid-column: 1 / -1;
-            margin-top: 0;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-            color: var(--accent-color);
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .input-group label {
-            font-size: 0.9rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #ccc;
-        }
-
-        .input-group input {
-            background-color: #333;
-            border: 1px solid #555;
-            color: #fff;
-            padding: 8px;
-            border-radius: 4px;
-        }
-
-        .input-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .button-group {
-            grid-column: 1 / -1;
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        button {
-            flex: 1;
-            background-color: var(--accent-color);
-            color: #fff;
-            border: none;
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        button:hover { background-color: #0097a7; }
-        button.danger { background-color: #e53935; }
-        button.danger:hover { background-color: #c62828; }
-        button.success { background-color: #4CAF50; }
-        button.success:hover { background-color: #388E3C; }
-        button.info { background-color: #2196F3; }
-        button.info:hover { background-color: #1976D2; }
-
-        #zoom-control {
-            grid-column: 1 / -1;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            background: #222;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #444;
-        }
-
-        #zoom-control input[type="range"] {
-            flex: 1;
-        }
-
-        #output-area {
-            width: 100%;
-            background-color: #000000;
-            border: 2px dashed #666;
-            padding: 40px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: flex-end; 
-            gap: 40px;
-            box-sizing: border-box;
-        }
-
-        .screen-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #111;
-            padding: 15px;
-            border: 1px solid #333;
-            border-radius: 8px;
-        }
-
-        .screen-title {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--accent-color);
-            margin-bottom: 15px;
-            text-align: center;
-            text-transform: uppercase;
-        }
-
-        .screen-svg {
-            background-color: var(--screen-bg);
-            border: 2px solid #000;
-            box-shadow: 0 0 15px rgba(0,0,0,0.8);
-        }
-
-        .screen-svg line { 
-            stroke: var(--screen-lines); 
-            stroke-width: 0.5; 
-            opacity: 0.6; 
-        }
-        .screen-svg .crosshair { 
-            stroke: var(--accent-color); 
-            stroke-width: 1.5; 
-            opacity: 0.8;
-        }
-        .screen-svg .center-circle { 
-            stroke: var(--accent-color); 
-            stroke-width: 1.5; 
-            fill: rgba(0,0,0,0.5); 
-        }
-
-        .data-panel {
-            margin-top: 15px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.85rem;
-            color: #ddd;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .data-line { 
-            display: flex; 
-            justify-content: flex-start; 
-            gap: 8px;}
-        .data-label { color: #888; }
-        .data-value { 
-            font-weight: bold; 
-            color: #fff;
-        }
-    </style>
+    <link rel="icon" type="image/png" href="images/ledsupport.jpeg?v=2">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <div id="controls">
-        <h2>Añadir Pantalla al Proyecto</h2>
-        <div class="input-group full-width">
-            <label>Nombre del proyecto:</label>
-            <input type="text" id="input-project-name" value="PROYECTO 1">
+    <div id="panel-control">
+        <h2>Gestión del Proyecto</h2>
+        
+        <div class="grupo-entrada ancho-completo">
+            <label>Nombre General del Proyecto:</label>
+            <input type="text" id="entrada-nombre-proyecto" value="PROYECTO 1">
         </div>
-        <div class="input-group">
-            <label>Título de la Pantalla:</label>
-            <input type="text" id="input-title" value="PANTALLA CENTRAL">
-        </div>
-        <div class="input-group">
-            <label>Pitch (mm):</label>
-            <input type="number" id="input-pitch" value="3.9" step="0.1" min="0.1">
-        </div>
-        <div class="input-group">
-            <label>Ancho (m):</label>
-            <input type="number" id="input-screen-w" value="3.0" step="0.1" min="0.1">
-        </div>
-        <div class="input-group">
-            <label>Alto (m):</label>
-            <input type="number" id="input-screen-h" value="2.0" step="0.1" min="0.1">
-        </div>
-        <div class="input-group">
-            <label>Ancho Módulo (cm):</label>
-            <input type="number" id="input-module-w" value="50" step="1" min="10">
-        </div>
-        <div class="input-group">
-            <label>Alto Módulo (cm):</label>
-            <input type="number" id="input-module-h" value="50" step="1" min="10">
+
+        <h3>Gestión de Diapositivas</h3>
+        
+        <div class="grupo-entrada">
+            <label>Diapositiva Activa para Editar:</label>
+            <select id="selector-diapositiva"></select>
         </div>
         
-        <div class="button-group">
-            <button id="add-btn">Añadir Pantalla</button>
-            <button id="clear-btn" class="danger">Borrar Todo</button>
+        <div class="grupo-entrada">
+            <label>Título Nueva Diapositiva:</label>
+            <input type="text" id="entrada-titulo-diapositiva" value="Día 1">
         </div>
 
-        <div id="zoom-control">
-            <label><strong>Zoom Global:</strong></label>
-            <input type="range" id="zoom-slider" min="30" max="300" value="120">
-            <span id="zoom-value">120px/m</span>
+        <div class="grupo-botones">
+            <button id="boton-agregar-diapositiva">Añadir Nueva Diapositiva</button>
         </div>
 
-        <div class="button-group" style="margin-top: 5px;">
-            <button id="export-jpg-btn" class="success">⬇ Exportar a JPG (Alta Calidad)</button>
-            <button id="export-pdf-btn" class="info">⬇ Exportar a PDF</button>
+        <h3>Añadir Pantalla a la Diapositiva Activa</h3>
+
+        <div class="grupo-entrada">
+            <label>Título de la Pantalla:</label>
+            <input type="text" id="entrada-titulo-pantalla" value="PANTALLA 1">
+        </div>
+        <div class="grupo-entrada">
+            <label>Pitch (mm):</label>
+            <input type="number" id="entrada-pitch" value="3.9" step="0.1" min="0.1">
+        </div>
+        <div class="grupo-entrada">
+            <label>Ancho (m):</label>
+            <input type="number" id="entrada-ancho-pantalla" value="3.0" step="0.1" min="0.1">
+        </div>
+        <div class="grupo-entrada">
+            <label>Alto (m):</label>
+            <input type="number" id="entrada-alto-pantalla" value="2.0" step="0.1" min="0.1">
+        </div>
+        <div class="grupo-entrada">
+            <label>Ancho Módulo (cm):</label>
+            <input type="number" id="entrada-ancho-modulo" value="50" step="1" min="10">
+        </div>
+        <div class="grupo-entrada">
+            <label>Alto Módulo (cm):</label>
+            <input type="number" id="entrada-alto-modulo" value="50" step="1" min="10">
+        </div>
+        
+        <div class="grupo-botones">
+            <button id="boton-agregar-pantalla">Añadir Pantalla</button>
+        </div>
+
+        <div class="grupo-botones">
+            <button id="boton-exportar-jpg" class="exito">⬇ Exportar a JPG (Por Diapositiva)</button>
+            <button id="boton-exportar-pdf" class="exito">⬇ Exportar a PDF (Documento Completo)</button>
         </div>
     </div>
 
-    <div id="output-area"></div>
+    <div id="area-salida"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <script>
-        const screensData = [];
-        const outputArea = document.getElementById('output-area');
-        const zoomSlider = document.getElementById('zoom-slider');
-        const zoomValueText = document.getElementById('zoom-value');
-
-        addScreenFromInputs();
-
-        // Controles
-        document.getElementById('add-btn').addEventListener('click', addScreenFromInputs);
-        document.getElementById('clear-btn').addEventListener('click', () => {
-            screensData.length = 0;
-            renderAllScreens();
-        });
-
-        // Exportación
-        document.getElementById('export-jpg-btn').addEventListener('click', exportToJPG);
-        document.getElementById('export-pdf-btn').addEventListener('click', exportToPDF);
-
-        zoomSlider.addEventListener('input', (e) => {
-            zoomValueText.innerText = `${e.target.value}px/m`;
-            renderAllScreens();
-        });
-
-        document.getElementById('input-project-name').addEventListener('input', renderAllScreens);
-
-        function addScreenFromInputs() {
-            const title = document.getElementById('input-title').value;
-            const w = parseFloat(document.getElementById('input-screen-w').value);
-            const h = parseFloat(document.getElementById('input-screen-h').value);
-            const pitch = parseFloat(document.getElementById('input-pitch').value);
-            const modW = parseFloat(document.getElementById('input-module-w').value);
-            const modH = parseFloat(document.getElementById('input-module-h').value);
-
-            if(!title || !w || !h || !pitch || !modW || !modH) return;
-
-            screensData.push({ title, w, h, pitch, modW, modH });
-            
-            document.getElementById('input-title').value = "PANTALLA " + (screensData.length + 1);
-            
-            renderAllScreens();
-        }
-
-        function renderAllScreens() {
-            outputArea.innerHTML = ''; 
-            const pxPerMeter = parseInt(zoomSlider.value); 
-
-            const projectName = document.getElementById('input-project-name').value;
-    
-            if (projectName.trim() !== '') {
-                const projectTitle = document.createElement('h1');
-                projectTitle.innerText = projectName;
-                projectTitle.style.width = '100%';
-                projectTitle.style.textAlign = 'center';
-                projectTitle.style.color = '#ffffff';
-                projectTitle.style.fontWeight = 'bold';
-                projectTitle.style.fontSize = '2.5rem';
-                projectTitle.style.margin = '0 0 20px 0';
-                projectTitle.style.textTransform = 'uppercase';
-                
-                outputArea.appendChild(projectTitle);
-            }
-
-            screensData.forEach(screen => {
-                const screenW_mm = screen.w * 1000;
-                const screenH_mm = screen.h * 1000;
-                const moduleW_m = screen.modW / 100;
-                const moduleH_m = screen.modH / 100;
-                const cols = Math.ceil(screen.w / moduleW_m);
-                const rows = Math.ceil(screen.h / moduleH_m);
-                const h_px = Math.round((screen.modW * 10) / screen.pitch) * cols;
-                const v_px = Math.round((screen.modH * 10) / screen.pitch) * rows;
-
-                const wrapper = document.createElement('div');
-                wrapper.className = 'screen-wrapper';
-
-                const titleEl = document.createElement('div');
-                titleEl.className = 'screen-title';
-                titleEl.innerText = screen.title;
-                wrapper.appendChild(titleEl);
-
-                // SVG 
-                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-                svg.classList.add('screen-svg');
-                
-                svg.style.width = `${screen.w * pxPerMeter}px`;
-                svg.style.height = `${screen.h * pxPerMeter}px`;
-                
-                const scale = 100; 
-                svg.setAttribute('viewBox', `0 0 ${screen.w * scale} ${screen.h * scale}`);
-
-                // Grilla Vertical
-                for (let i = 1; i < cols; i++) {
-                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    const x = i * moduleW_m * scale;
-                    line.setAttribute('x1', x); line.setAttribute('y1', 0);
-                    line.setAttribute('x2', x); line.setAttribute('y2', screen.h * scale);
-                    svg.appendChild(line);
-                }
-
-                // Grilla Horizontal
-                for (let j = 1; j < rows; j++) {
-                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                    const y = j * moduleH_m * scale;
-                    line.setAttribute('x1', 0); line.setAttribute('y1', y);
-                    line.setAttribute('x2', screen.w * scale); line.setAttribute('y2', y);
-                    svg.appendChild(line);
-                }
-
-                // Diagonales
-                const diag1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                diag1.setAttribute('x1', 0); diag1.setAttribute('y1', 0);
-                diag1.setAttribute('x2', screen.w * scale); diag1.setAttribute('y2', screen.h * scale);
-                diag1.setAttribute('class', 'crosshair');
-                svg.appendChild(diag1);
-
-                const diag2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                diag2.setAttribute('x1', screen.w * scale); diag2.setAttribute('y1', 0);
-                diag2.setAttribute('x2', 0); diag2.setAttribute('y2', screen.h * scale);
-                diag2.setAttribute('class', 'crosshair');
-                svg.appendChild(diag2);
-
-                // Círculo Central y Texto
-                const centerX = (screen.w * scale) / 2;
-                const centerY = (screen.h * scale) / 2;
-                const minDimension = Math.min(screen.w * scale, screen.h * scale);
-
-                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                circle.setAttribute('cx', centerX); circle.setAttribute('cy', centerY);
-                circle.setAttribute('r', minDimension * 0.15);
-                circle.setAttribute('class', 'center-circle');
-                svg.appendChild(circle);
-
-                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                text.setAttribute('x', centerX); text.setAttribute('y', centerY + (minDimension * 0.04));
-                text.setAttribute('fill', '#fff'); text.setAttribute('text-anchor', 'middle');
-                text.setAttribute('font-size', minDimension * 0.12);
-                text.setAttribute('font-weight', 'bold');
-                text.textContent = `${h_px}x${v_px}`;
-                svg.appendChild(text);
-
-                const watermark = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                watermark.setAttribute('x', (screen.w * scale) - (minDimension * 0.05));
-                watermark.setAttribute('y', (screen.h * scale) - (minDimension * 0.05));
-                watermark.setAttribute('fill', 'rgba(255, 255, 255, 0.3)');
-                watermark.setAttribute('text-anchor', 'end');
-                watermark.setAttribute('font-size', minDimension * 0.05);
-                watermark.setAttribute('font-family', 'Arial');
-                watermark.textContent = "By Gonzalo Apud";
-                svg.appendChild(watermark);
-
-                wrapper.appendChild(svg);
-
-                // Panel de Datos
-                const dataPanel = document.createElement('div');
-                dataPanel.className = 'data-panel';
-                dataPanel.innerHTML = `
-                    <div class="data-line"><span class="data-label">Medidas:</span><span class="data-value">${screen.w.toFixed(1)} x ${screen.h.toFixed(1)} m</span></div>
-                    <div class="data-line"><span class="data-label">Pitch:</span><span class="data-value">${screen.pitch.toFixed(1)} mm</span></div>
-                    <div class="data-line"><span class="data-label">Resolución:</span><span class="data-value">${h_px} x ${v_px} px</span></div>
-                    <div class="data-line"><span class="data-label">Módulos:</span><span class="data-value">${cols} x ${rows} (${screen.modW}x${screen.modH}cm)</span></div>
-                `;
-                wrapper.appendChild(dataPanel);
-
-                outputArea.appendChild(wrapper);
-            });
-        }
-
-        // FUNCIONES DE EXPORTACIÓ
-
-        async function exportToJPG() {
-            if (screensData.length === 0) return alert("Añade al menos una pantalla antes de exportar.");
-            
-            // Convertimos a un lienzo
-            const canvas = await html2canvas(outputArea, { 
-                scale: 2, 
-                backgroundColor: '#000000',
-                useCORS: true 
-            });
-            
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
-            
-            // Descarga
-            const link = document.createElement('a');
-            link.download = 'Esquema_Pantallas.jpg';
-            link.href = imgData;
-            link.click();
-        }
-
-        async function exportToPDF() {
-            if (screensData.length === 0) return alert("Añade al menos una pantalla antes de exportar.");
-
-            // Convertimos a un lienzo
-            const canvas = await html2canvas(outputArea, { 
-                scale: 2, 
-                backgroundColor: '#000000',
-                useCORS: true 
-            });
-            
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
-            const { jsPDF } = window.jspdf;
-            
-            // Config del PDF
-            const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
-            const pdf = new jsPDF({
-                orientation: orientation,
-                unit: 'px',
-                format: [canvas.width, canvas.height] 
-            });
-            
-            pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
-            pdf.save('Esquema_Pantallas.pdf');
-        }
-    </script>
+    <script src="components/pantalla.js"></script>
+    <script src="components/diapositiva.js"></script>
+    <script src="App.js"></script>
 </body>
 </html>
